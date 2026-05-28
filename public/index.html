@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RentAI</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f3ee;--white:#fff;--border:#e6e2db;--text:#1a1a1a;--muted:#888;--accent:#e94560;--green-bg:#d4edda;--green-text:#155724;--amber-bg:#fff3cd;--amber-text:#856404;--red-bg:#f8d7da;--red-text:#721c24;--blue-bg:#d1ecf1;--blue-text:#0c5460}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+.sb{width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;flex-shrink:0}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.sb-logo-name{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sb-logo-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sb-nav{padding:10px 8px;flex:1;overflow-y:auto}
+.sb-btn{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);border:none;background:none;width:100%;text-align:left;transition:.12s;margin-bottom:2px}
+.sb-btn:hover{background:var(--bg);color:var(--text)}
+.sb-btn.on{background:var(--text);color:#fff;font-weight:500}
+.sb-btn.on i{color:#fff}
+.sb-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;padding:2px 6px;border-radius:8px;font-weight:700}
+.sb-user{padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.sb-avatar img{width:100%;height:100%;object-fit:cover}
+.sb-uname{font-size:12px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-uemail{font-size:10px;color:var(--muted)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100vh}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;flex:1}
+.content{flex:1;overflow-y:auto;padding:22px}
+.page{display:none}.page.on{display:block}
+
+/* BUTTONS */
+.btn{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:var(--text);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.12s;font-family:inherit;font-weight:500}
+.btn:hover{background:var(--bg)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-dark{background:var(--text);border-color:var(--text);color:#fff}
+.btn-dark:hover{background:#333}
+.btn-red{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-red:hover{background:#c73550}
+.btn-sm{padding:5px 9px;font-size:11px}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.card-title{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;color:var(--text);text-transform:uppercase;letter-spacing:.04em}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.g4{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:14px}
+.stat{background:var(--bg);border-radius:8px;padding:12px 14px}
+.stat-v{font-size:26px;font-weight:700}
+.stat-l{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* PROPERTY CARD */
+.pcard{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:.15s}
+.pcard:hover{border-color:#aaa;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.pcard-img{height:145px;background:#e6e2db;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.pcard-img img{width:100%;height:100%;object-fit:cover}
+.pcard-icon{font-size:38px;color:#c0bab2}
+.pcard-status{position:absolute;top:10px;right:10px;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700}
+.st-a{background:var(--green-bg);color:var(--green-text)}
+.st-d{background:var(--amber-bg);color:var(--amber-text)}
+.pcard-body{padding:13px}
+.pcard-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.pcard-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;margin-bottom:7px}
+.pcard-price{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:7px}
+.pcard-add{border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;min-height:220px;cursor:pointer;transition:.15s;border-radius:12px}
+.pcard-add:hover{border-color:#999;background:#f9f8f5}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.p-g{background:var(--green-bg);color:var(--green-text)}
+.p-b{background:var(--blue-bg);color:var(--blue-text)}
+.p-a{background:var(--amber-bg);color:var(--amber-text)}
+.p-r{background:var(--red-bg);color:var(--red-text)}
+.p-gr{background:var(--bg);color:#555}
+
+/* FORM */
+.fr{margin-bottom:12px}
+.fl{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.03em}
+.fi{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--white);color:var(--text);font-family:inherit;transition:.12s}
+.fi:focus{outline:none;border-color:#999}
+textarea.fi{resize:vertical;min-height:120px;line-height:1.5}
+
+/* UPLOAD */
+.upzone{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:.15s;margin-bottom:12px}
+.upzone:hover{border-color:#999;background:#f9f8f5}
+.photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.photo-t{width:78px;height:58px;border-radius:7px;object-fit:cover;border:1px solid var(--border)}
+
+/* TENANT ROW */
+.trow{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid #f0ede8}
+.trow:last-child{border:none}
+.tav{width:36px;height:36px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--blue-text);flex-shrink:0}
+.tname{font-size:13px;font-weight:600}
+.ttype{font-size:11px;color:var(--muted)}
+.tscore{font-size:12px;padding:3px 8px;border-radius:8px;font-weight:700;flex-shrink:0}
+.s-hi{background:var(--green-bg);color:var(--green-text)}
+.s-md{background:var(--amber-bg);color:var(--amber-text)}
+.s-lo{background:var(--red-bg);color:var(--red-text)}
+
+/* NEARBY */
+.nrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f5f2ee;font-size:12px}
+.nrow:last-child{border:none}
+.nico{width:28px;height:28px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+
+/* EMAIL */
+.ecard{border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
+.esubj{font-size:13px;font-weight:600;margin-bottom:3px}
+.eto{font-size:11px;color:var(--muted);margin-bottom:8px}
+.eprev{font-size:12px;color:#666;line-height:1.6;margin-bottom:9px}
+
+/* AI PANEL */
+.ai-box{background:#f9f8f6;border:1px solid var(--border);border-radius:9px;padding:13px;margin-bottom:12px}
+.ai-head{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;margin-bottom:7px;color:var(--accent)}
+
+/* MAP */
+#ymaps-container{width:100%;height:300px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px}
+
+/* MODAL */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center}
+.moverlay.open{display:flex}
+.modal{background:var(--white);border-radius:14px;padding:22px;width:92%;max-width:560px;max-height:85vh;overflow-y:auto}
+.modal-hd{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.mclose{background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);padding:0;line-height:1}
+
+/* AUTH */
+.auth{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:2000}
+.auth-box{background:var(--white);border-radius:16px;padding:36px 40px;text-align:center;max-width:340px;border:1px solid var(--border)}
+
+/* SPINNER */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #ddd;border-top-color:var(--text);border-radius:50%;animation:sp .65s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:12px 0}
+
+/* MAP hint */
+.map-hint{font-size:11px;color:var(--muted);margin-top:-10px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div class="auth" id="authWall">
+  <div class="auth-box">
+    <i class="ti ti-building-store" style="font-size:40px;color:var(--accent);display:block;margin-bottom:12px"></i>
+    <div style="font-size:20px;font-weight:700;margin-bottom:8px">RentAI</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5">Войди через Gmail — это нужно чтобы отправлять письма арендаторам прямо с твоей почты</div>
+    <a href="/auth/google" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:#fff;padding:11px 20px;border-radius:9px;text-decoration:none;font-size:14px;font-weight:600">
+      <i class="ti ti-brand-google"></i>Войти через Gmail
+    </a>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-name"><i class="ti ti-building-store" style="color:var(--accent)"></i>RentAI</div>
+    <div class="sb-logo-sub">Коммерческая аренда</div>
+  </div>
+  <nav class="sb-nav">
+    <button class="sb-btn on" onclick="nav('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Обзор</button>
+    <button class="sb-btn" onclick="nav('add',this)"><i class="ti ti-plus"></i>Добавить объект</button>
+    <button class="sb-btn" onclick="nav('props',this)"><i class="ti ti-building"></i>Мои объекты</button>
+    <button class="sb-btn" id="navT" onclick="nav('tenants',this)"><i class="ti ti-users"></i>Арендаторы</button>
+    <button class="sb-btn" id="navE" onclick="nav('emails',this)"><i class="ti ti-mail"></i>Рассылка</button>
+  </nav>
+  <div class="sb-user">
+    <div class="sb-avatar" id="sAvatar">?</div>
+    <div style="flex:1;overflow:hidden">
+      <div class="sb-uname" id="sName">—</div>
+      <div class="sb-uemail" id="sEmail"></div>
+    </div>
+    <a href="/auth/logout" style="color:var(--muted);text-decoration:none" title="Выйти"><i class="ti ti-logout" style="font-size:15px"></i></a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="ptitle">Обзор</span>
+    <button class="btn btn-dark" onclick="topAct()"><i class="ti ti-sparkles"></i><span id="pbtnlbl">Обновить</span></button>
+  </div>
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page on" id="page-dashboard">
+      <div class="g3" id="dStats"></div>
+      <div class="g2">
+        <div class="card"><div class="card-title"><i class="ti ti-mail"></i>Последние письма</div><div id="dEmails"></div></div>
+        <div class="card"><div class="card-title"><i class="ti ti-building"></i>Объекты</div><div id="dProps"></div></div>
+      </div>
+    </div>
+
+    <!-- ADD -->
+    <div class="page" id="page-add">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-camera"></i>Фотографии</div>
+        <div class="photo-grid" id="photoPreview"></div>
+        <div class="upzone" onclick="document.getElementById('pInput').click()">
+          <i class="ti ti-upload" style="font-size:26px;color:#bbb;display:block;margin-bottom:7px"></i>
+          <p style="font-size:13px;color:var(--muted)">Нажми или перетащи фото сюда</p>
+          <p style="font-size:11px;color:#bbb;margin-top:3px">JPG, PNG — до 15 МБ каждый</p>
+        </div>
+        <input type="file" id="pInput" multiple accept="image/*" style="display:none" onchange="previewPh(this)">
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-info-circle"></i>Основное</div>
+          <div class="fr"><label class="fl">Адрес *</label><input class="fi" id="fAddr" placeholder="г. Москва, ул. Садовая, 14"></div>
+          <div class="fr"><label class="fl">Площадь (м²) *</label><input class="fi" id="fArea" type="number" placeholder="120"></div>
+          <div class="fr"><label class="fl">Цена (₽/мес) *</label><input class="fi" id="fPrice" type="number" placeholder="85000"></div>
+          <div class="fr"><label class="fl">Тип</label>
+            <select class="fi" id="fType"><option>Торговое</option><option>Офисное</option><option>Общепит</option><option>Склад</option><option>Производственное</option></select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-list-details"></i>Детали</div>
+          <div class="fr"><label class="fl">Этаж</label><input class="fi" id="fFloor" placeholder="1"></div>
+          <div class="fr"><label class="fl">Высота потолков (м)</label><input class="fi" id="fCeil" placeholder="3.2"></div>
+          <div class="fr"><label class="fl">Вход</label>
+            <select class="fi" id="fEntr"><option>Отдельный с улицы</option><option>Из торгового центра</option><option>Общий подъезд</option></select>
+          </div>
+          <div class="fr"><label class="fl">Особенности</label><input class="fi" id="fFeat" placeholder="Витрина, парковка, сигнализация..."></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
+        <button class="btn" onclick="nav('props',document.querySelectorAll('.sb-btn')[2])">Отмена</button>
+        <button class="btn btn-dark" id="saveBtn" onclick="saveProp()"><i class="ti ti-device-floppy"></i>Сохранить и искать арендаторов</button>
+      </div>
+    </div>
+
+    <!-- PROPS -->
+    <div class="page" id="page-props">
+      <div class="g4" id="propGrid"></div>
+    </div>
+
+    <!-- TENANTS -->
+    <div class="page" id="page-tenants">
+      <div id="tenantContent">
+        <div style="text-align:center;padding:50px;color:var(--muted)">
+          <i class="ti ti-users" style="font-size:44px;display:block;margin-bottom:12px;opacity:.25"></i>
+          <p style="font-size:14px">Открой объект → нажми «Найти арендаторов»</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAILS -->
+    <div class="page" id="page-emails">
+      <div class="card"><div class="card-title"><i class="ti ti-brand-google"></i>Gmail</div><div id="gmailStatus"></div></div>
+      <div class="card"><div class="card-title"><i class="ti ti-history"></i>Отправленные письма</div><div id="emailsList"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: объект -->
+<div class="moverlay" id="propModal">
+  <div class="modal">
+    <div class="modal-hd"><span id="mTitle">Объект</span><button class="mclose" onclick="closeMod('propModal')"><i class="ti ti-x"></i></button></div>
+    <div id="mContent"></div>
+  </div>
+</div>
+
+<!-- MODAL: письмо -->
+<div class="moverlay" id="mailModal">
+  <div class="modal">
+    <div class="modal-hd"><span>Написать письмо</span><button class="mclose" onclick="closeMod('mailModal')"><i class="ti ti-x"></i></button></div>
+    <div id="mailContent"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+let user=null, props=[], emails=[], files=[], curPropId=null, ymapsKey='';
+
+// ── INIT ──────────────────────────────────────────────────
+async function init(){
+  const [me, cfg] = await Promise.all([fetch('/api/me').then(r=>r.json()), fetch('/api/config').then(r=>r.json())]);
+  ymapsKey = cfg.yandexKey||'';
+  user = me;
+  if(!user){
+    document.getElementById('authWall').style.display='flex';
+    return;
+  }
+  // аватар
+  const av=document.getElementById('sAvatar');
+  av.innerHTML=user.picture?`<img src="${user.picture}">`:(user.name||user.email)[0].toUpperCase();
+  document.getElementById('sName').textContent=user.name||user.email;
+  document.getElementById('sEmail').textContent=user.email;
+  await loadData();
+  renderDash();
+  loadYmaps();
+}
+
+function loadYmaps(){
+  if(!ymapsKey) return;
+  const s=document.createElement('script');
+  s.src=`https://api-maps.yandex.ru/2.1/?apikey=${ymapsKey}&lang=ru_RU`;
+  document.head.appendChild(s);
+}
+
+async function loadData(){
+  const [p,e]=await Promise.all([fetch('/api/properties').then(r=>r.json()),fetch('/api/emails').then(r=>r.json())]);
+  props=p; emails=e;
+}
+
+// ── NAV ──────────────────────────────────────────────────
+const titles={dashboard:'Обзор',add:'Добавить объект',props:'Мои объекты',tenants:'Арендаторы',emails:'Рассылка'};
+const btns={dashboard:'Обновить',add:'Сохранить',props:'+ Объект',tenants:'Найти ещё',emails:'История'};
+
+function nav(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('page-'+id).classList.add('on');
+  if(btn) btn.classList.add('on');
+  document.getElementById('ptitle').textContent=titles[id]||id;
+  document.getElementById('pbtnlbl').textContent=btns[id]||'OK';
+  if(id==='props') renderProps();
+  if(id==='emails') renderEmails();
+  if(id==='dashboard') renderDash();
+}
+
+function topAct(){
+  const pg=document.querySelector('.page.on').id.replace('page-','');
+  if(pg==='add') saveProp();
+  else if(pg==='props') nav('add',document.querySelectorAll('.sb-btn')[1]);
+  else { loadData().then(renderDash); }
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────
+function renderDash(){
+  document.getElementById('dStats').innerHTML=`
+    <div class="stat"><div class="stat-v">${props.length}</div><div class="stat-l">Объектов</div></div>
+    <div class="stat"><div class="stat-v">${props.reduce((a,p)=>a+(p.tenants||[]).length,0)}</div><div class="stat-l">Кандидатов найдено</div></div>
+    <div class="stat"><div class="stat-v">${emails.length}</div><div class="stat-l">Писем отправлено</div></div>`;
+  document.getElementById('dEmails').innerHTML=[...emails].reverse().slice(0,5).map(e=>`
+    <div style="padding:7px 0;border-bottom:1px solid #f0ede8">
+      <div style="font-size:12px;font-weight:600">${e.subject}</div>
+      <div style="font-size:11px;color:var(--muted)">${e.to} · ${new Date(e.sentAt).toLocaleDateString('ru')}</div>
+    </div>`).join('')||'<div style="font-size:12px;color:var(--muted)">Писем ещё не отправлено</div>';
+  document.getElementById('dProps').innerHTML=props.slice(0,5).map(p=>`
+    <div style="padding:7px 0;border-bottom:1px solid #f0ede8;cursor:pointer" onclick="openProp('${p.id}')">
+      <div style="font-size:13px;font-weight:600">${p.address}</div>
+      <div style="font-size:11px;color:var(--muted)">${p.area} м² · ${(+p.price).toLocaleString()} ₽/мес · <span style="color:var(--accent)">${p.emailsSent||0} писем</span></div>
+    </div>`).join('')||'<div style="font-size:12px;color:var(--muted)">Объектов нет</div>';
+}
+
+// ── PROPS ──────────────────────────────────────────────────
+function renderProps(){
+  document.getElementById('propGrid').innerHTML=props.map(p=>`
+    <div class="pcard" onclick="openProp('${p.id}')">
+      <div class="pcard-img">
+        ${p.photos?.length?`<img src="${p.photos[0]}">`:`<i class="ti ti-building-store pcard-icon"></i>`}
+        <span class="pcard-status ${p.status==='active'?'st-a':'st-d'}">${p.status==='active'?'Активен':'Черновик'}</span>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-name">${p.address}</div>
+        <div class="pcard-meta"><span>${p.area} м²</span><span>${p.floor||1} эт.</span><span>${p.type}</span></div>
+        <div class="pcard-price">${(+p.price).toLocaleString()} ₽/мес</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          ${(p.tenants||[]).length?`<span class="pill p-g">${p.tenants.length} кандидатов</span>`:''}
+          ${p.emailsSent?`<span class="pill p-b">${p.emailsSent} писем</span>`:''}
+          ${!(p.tenants||[]).length?`<span class="pill p-a">Нет кандидатов</span>`:''}
+        </div>
+      </div>
+    </div>`).join('')+`
+    <div class="pcard pcard-add" onclick="nav('add',document.querySelectorAll('.sb-btn')[1])">
+      <div style="text-align:center;color:#bbb">
+        <i class="ti ti-plus" style="font-size:30px;display:block;margin-bottom:7px"></i>
+        <div style="font-size:13px">Добавить объект</div>
+      </div>
+    </div>`;
+}
+
+// ── PROP DETAIL ──────────────────────────────────────────
+function openProp(id){
+  curPropId=id;
+  const p=props.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('mTitle').textContent=p.address;
+  const phHtml=p.photos?.length
+    ?p.photos.map(ph=>`<img src="${ph}" style="width:140px;height:100px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">`).join('')
+    :`<div style="width:140px;height:100px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:32px;color:#bbb;flex-shrink:0"><i class="ti ti-building-store"></i></div>`;
+
+  const nearbyHtml=(p.nearby||[]).length?`
+    <div class="card-title" style="margin-bottom:8px"><i class="ti ti-map-pin"></i>Что рядом</div>
+    ${p.nearby.map(n=>`<div class="nrow">
+      <div class="nico">🏢</div>
+      <div style="flex:1"><strong>${n.name}</strong><span style="color:var(--muted);margin-left:6px">${n.type}</span></div>
+      <span style="font-size:11px;color:var(--muted)">${n.distance}</span>
+      <span class="pill ${n.isCompetitor?'p-r':'p-g'}" style="margin-left:8px">${n.isCompetitor?'Конкурент':'Ок'}</span>
+    </div>`).join('')}`
+    :`<p style="font-size:12px;color:var(--muted);margin-bottom:10px">Анализ окружения ещё не запускался</p>`;
+
+  const mapHtml=p.coords?`<div id="ymaps-container"></div><p class="map-hint">Карта: ${p.address}</p>`:'';
+
+  document.getElementById('mContent').innerHTML=`
+    <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:14px">${phHtml}</div>
+    <div class="g2" style="margin-bottom:10px">
+      <div class="stat"><div class="stat-v">${p.area} м²</div><div class="stat-l">Площадь</div></div>
+      <div class="stat"><div class="stat-v">${(+p.price).toLocaleString()} ₽</div><div class="stat-l">В месяц</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">${p.type} · эт. ${p.floor||1}${p.ceiling?' · потолки '+p.ceiling+' м':''}${p.entrance?' · '+p.entrance:''}${p.features?' · '+p.features:''}</p>
+    ${mapHtml}
+    ${nearbyHtml}
+    ${p.analyzeSummary?`<div class="ai-box" style="margin-top:12px"><div class="ai-head"><i class="ti ti-robot"></i>AI-вывод</div><p style="font-size:12px;color:#555;line-height:1.6">${p.analyzeSummary}</p></div>`:''}
+    ${p.goodCategories?.length?`<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--muted)">Подходит:</span>
+      ${p.goodCategories.map(c=>`<span class="pill p-g">${c}</span>`).join('')}
+    </div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
+      <button class="btn btn-dark" onclick="doAnalyze('${p.id}')"><i class="ti ti-search"></i>${p.nearby?.length?'Обновить анализ':'Анализировать окружение'}</button>
+      <button class="btn btn-red" onclick="doFindTenants('${p.id}')"><i class="ti ti-users"></i>Найти арендаторов</button>
+      <button class="btn" onclick="delProp('${p.id}')"><i class="ti ti-trash"></i></button>
+    </div>`;
+
+  document.getElementById('propModal').classList.add('open');
+
+  // рисуем карту если есть координаты
+  if(p.coords && typeof ymaps!=='undefined'){
+    setTimeout(()=>{
+      ymaps.ready(()=>{
+        const map=new ymaps.Map('ymaps-container',{center:[p.coords.lat,p.coords.lon],zoom:15});
+        map.geoObjects.add(new ymaps.Placemark([p.coords.lat,p.coords.lon],{balloonContent:p.address},{preset:'islands#redDotIcon'}));
+        (p.nearby||[]).forEach(n=>{
+          if(n.lat&&n.lon) map.geoObjects.add(new ymaps.Placemark([n.lat,n.lon],{balloonContent:n.name},{preset:'islands#blueDotIcon'}));
+        });
+      });
+    },200);
+  }
+}
+
+// ── ANALYZE ──────────────────────────────────────────────
+async function doAnalyze(id){
+  const p=props.find(x=>x.id===id);
+  const btn=event.target.closest('button');
+  setBtnLoad(btn,'Анализирую...');
+  try {
+    // 1. Получаем что рядом через Яндекс
+    const nr=await fetch('/api/nearby',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:p.address})}).then(r=>r.json());
+    // 2. Отдаём в Gemini для анализа
+    const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({propertyId:id, nearby:nr.nearby||[], coords:nr.coords, address:p.address, area:p.area, type:p.type, price:p.price})
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    await loadData();
+    openProp(id);
+  } catch(e){ alert('Ошибка: '+e.message); setBtnReset(btn,'<i class="ti ti-search"></i>Анализировать окружение'); }
+}
+
+// ── FIND TENANTS ─────────────────────────────────────────
+async function doFindTenants(id){
+  const btn=event.target.closest('button');
+  setBtnLoad(btn,'Ищу арендаторов...');
+  try {
+    const res=await fetch('/api/find-tenants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({propertyId:id})}).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    await loadData();
+    closeMod('propModal');
+    renderTenants(id);
+    nav('tenants',document.getElementById('navT'));
+  } catch(e){ alert('Ошибка: '+e.message); setBtnReset(btn,'<i class="ti ti-users"></i>Найти арендаторов'); }
+}
+
+function renderTenants(id){
+  const p=props.find(x=>x.id===id);
+  if(!p) return;
+  const t=p.tenants||[], ex=p.excludedTenants||[];
+  document.getElementById('tenantContent').innerHTML=`
+    <div class="card">
+      <div class="card-title"><i class="ti ti-building"></i>${p.address} — ${t.length} кандидатов</div>
+      ${t.map(t=>`<div class="trow">
+        <div class="tav">${t.name.slice(0,2).toUpperCase()}</div>
+        <div style="flex:1">
+          <div class="tname">${t.name}</div>
+          <div class="ttype">${t.type} · ${t.areaMin}–${t.areaMax} м² · ${t.isChain?'Сеть':'Частное'}</div>
+          ${t.matchReason?`<div style="font-size:11px;color:#666;margin-top:2px">${t.matchReason}</div>`:''}
+          ${t.website?`<div style="font-size:11px;margin-top:2px"><a href="https://${t.website}" target="_blank" style="color:var(--accent)">${t.website}</a></div>`:''}
+        </div>
+        <span class="tscore ${t.matchScore>=80?'s-hi':t.matchScore>=60?'s-md':'s-lo'}">${t.matchScore}%</span>
+        <button class="btn btn-sm" style="margin-left:8px" onclick="openMail('${id}','${esc(t.name)}','${esc(t.type)}','${t.email||''}')"><i class="ti ti-mail"></i>Написать</button>
+      </div>`).join('')}
+    </div>
+    ${ex.length?`<div class="card">
+      <div class="card-title" style="color:var(--muted)"><i class="ti ti-ban"></i>Исключены автоматически</div>
+      ${ex.map(e=>`<div class="trow" style="opacity:.5">
+        <div class="tav" style="background:var(--red-bg);color:var(--red-text)"><i class="ti ti-x" style="font-size:13px"></i></div>
+        <div style="flex:1"><div class="tname">${e.name}</div><div class="ttype">${e.reason}</div></div>
+        <span class="pill p-r">Исключён</span>
+      </div>`).join('')}
+    </div>`:''}`;
+}
+
+// ── EMAIL COMPOSER ───────────────────────────────────────
+async function openMail(propId, tName, tType, tEmail){
+  const mc=document.getElementById('mailContent');
+  mc.innerHTML='<div class="loading"><div class="spin"></div>Генерирую письмо через AI...</div>';
+  document.getElementById('mailModal').classList.add('open');
+  try {
+    const res=await fetch('/api/generate-email',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({propertyId:propId, tenantName:tName, tenantType:tType})
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    mc.innerHTML=`
+      <div class="fr"><label class="fl">Кому (email)</label><input class="fi" id="eTo" value="${tEmail}" placeholder="email@company.ru"></div>
+      <div class="fr"><label class="fl">Тема</label><input class="fi" id="eSubj" value="${res.subject||''}"></div>
+      <div class="fr"><label class="fl">Текст письма</label><textarea class="fi" id="eBody">${res.body||''}</textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn" onclick="closeMod('mailModal')">Отмена</button>
+        <button class="btn btn-dark" onclick="sendMail('${propId}')"><i class="ti ti-send"></i>Отправить через Gmail</button>
+      </div>`;
+  } catch(e){
+    mc.innerHTML=`<p style="color:red;font-size:13px">Ошибка: ${e.message}</p>`;
+  }
+}
+
+async function sendMail(propId){
+  const to=document.getElementById('eTo').value.trim();
+  const subject=document.getElementById('eSubj').value.trim();
+  const body=document.getElementById('eBody').value.trim();
+  if(!to){ alert('Укажи email получателя'); return; }
+  const btn=event.target.closest('button');
+  setBtnLoad(btn,'Отправляю...');
+  try {
+    const res=await fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({to,subject,body,propertyId:propId})
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    closeMod('mailModal');
+    await loadData();
+    renderDash();
+    alert('✅ Письмо отправлено!');
+  } catch(e){ alert('Ошибка: '+e.message); setBtnReset(btn,'<i class="ti ti-send"></i>Отправить через Gmail'); }
+}
+
+// ── EMAILS PAGE ──────────────────────────────────────────
+function renderEmails(){
+  document.getElementById('gmailStatus').innerHTML=user?`
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--red-bg);display:flex;align-items:center;justify-content:center">
+        <i class="ti ti-brand-google" style="color:var(--red-text);font-size:17px"></i></div>
+      <div><div style="font-size:13px;font-weight:600">${user.email}</div><div style="font-size:11px;color:var(--muted)">Подключён · OAuth 2.0</div></div>
+      <span class="pill p-g" style="margin-left:auto"><i class="ti ti-check"></i>Активен</span>
+    </div>`
+    :`<a href="/auth/google" class="btn btn-red"><i class="ti ti-brand-google"></i>Подключить Gmail</a>`;
+
+  document.getElementById('emailsList').innerHTML=[...emails].reverse().map(e=>`
+    <div class="ecard">
+      <div class="esubj">${e.subject}</div>
+      <div class="eto">Кому: ${e.to} · ${new Date(e.sentAt).toLocaleString('ru')}</div>
+      <div class="eprev">${e.body.slice(0,200)}...</div>
+    </div>`).join('')||'<div style="font-size:13px;color:var(--muted)">Писем ещё нет</div>';
+}
+
+// ── SAVE PROP ────────────────────────────────────────────
+async function saveProp(){
+  const addr=document.getElementById('fAddr').value.trim();
+  const area=document.getElementById('fArea').value;
+  const price=document.getElementById('fPrice').value;
+  if(!addr||!area||!price){ alert('Заполни адрес, площадь и цену'); return; }
+  const btn=document.getElementById('saveBtn');
+  setBtnLoad(btn,'Сохраняю...');
+  const fd=new FormData();
+  fd.append('address',addr); fd.append('area',area); fd.append('price',price);
+  fd.append('type',document.getElementById('fType').value);
+  fd.append('floor',document.getElementById('fFloor').value);
+  fd.append('ceiling',document.getElementById('fCeil').value);
+  fd.append('entrance',document.getElementById('fEntr').value);
+  fd.append('features',document.getElementById('fFeat').value);
+  files.forEach(f=>fd.append('photos',f));
+  try {
+    const prop=await fetch('/api/properties',{method:'POST',body:fd}).then(r=>r.json());
+    await loadData();
+    // сброс формы
+    ['fAddr','fArea','fPrice','fFloor','fCeil','fFeat'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('photoPreview').innerHTML=''; files=[];
+    nav('props',document.querySelectorAll('.sb-btn')[2]);
+    // авто-анализ в фоне
+    setTimeout(async()=>{
+      try{
+        const nr=await fetch('/api/nearby',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:prop.address})}).then(r=>r.json());
+        await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({propertyId:prop.id, nearby:nr.nearby||[], coords:nr.coords, address:prop.address, area:prop.area, type:prop.type, price:prop.price})
+        });
+        await loadData(); renderProps();
+      } catch(e){ console.error(e); }
+    },300);
+  } catch(e){ alert('Ошибка: '+e.message); }
+  setBtnReset(btn,'<i class="ti ti-device-floppy"></i>Сохранить и искать арендаторов');
+}
+
+// ── DELETE ───────────────────────────────────────────────
+async function delProp(id){
+  if(!confirm('Удалить объект?')) return;
+  await fetch('/api/properties/'+id,{method:'DELETE'});
+  closeMod('propModal');
+  await loadData(); renderProps();
+}
+
+// ── PHOTOS ───────────────────────────────────────────────
+function previewPh(inp){
+  files=Array.from(inp.files);
+  const pv=document.getElementById('photoPreview');
+  pv.innerHTML='';
+  files.forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{const img=document.createElement('img');img.className='photo-t';img.src=e.target.result;pv.appendChild(img);};
+    r.readAsDataURL(f);
+  });
+}
+
+// ── UTILS ────────────────────────────────────────────────
+function closeMod(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.moverlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+function esc(s){ return (s||'').replace(/'/g,"\\'"); }
+function setBtnLoad(btn,txt){ if(!btn)return; btn._orig=btn.innerHTML; btn.innerHTML=`<div class="spin"></div>${txt}`; btn.disabled=true; }
+function setBtnReset(btn,html){ if(!btn)return; btn.innerHTML=html||btn._orig||'OK'; btn.disabled=false; }
+
+init();
+</script>
+</body>
+</html>
