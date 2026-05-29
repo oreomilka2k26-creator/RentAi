@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 
 // ── DB (простой JSON файл) ──────────────────────────────────
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
-function readDB()  { return fs.existsSync(DB_PATH) ? JSON.parse(fs.readFileSync(DB_PATH,'utf8')) : {properties:[],emails:[]}; }
-function writeDB(d){ fs.writeFileSync(DB_PATH, JSON.stringify(d,null,2)); }
+function readDB()  { const dir=path.join(__dirname,'data'); if(!fs.existsSync(dir))fs.mkdirSync(dir,{recursive:true}); return fs.existsSync(DB_PATH)?JSON.parse(fs.readFileSync(DB_PATH,'utf8')):{properties:[],emails:[]}; }
+function writeDB(d){ const dir=path.join(__dirname,'data'); if(!fs.existsSync(dir))fs.mkdirSync(dir,{recursive:true}); fs.writeFileSync(DB_PATH,JSON.stringify(d,null,2)); }
 
 // ── Загрузка фото ───────────────────────────────────────────
 const storage = multer.diskStorage({
